@@ -1,3 +1,18 @@
+cartpoleSwingD-v0:
+  #normalize: "{'norm_obs': True, 'norm_reward': False}"
+  n_timesteps: !!float 5e5
+  policy: 'MlpPolicy'
+  learning_rate: !!float 1e-3
+  buffer_size: 300000
+  batch_size: 1024
+  gamma: 0.99
+  tau: 0.02
+  train_freq: 64
+  gradient_steps: 64
+  learning_starts: 10000
+  policy_kwargs: "dict(log_std_init=-3, net_arch=[400, 300])"
+
+
 atari:
   env_wrapper:
     - stable_baselines3.common.atari_wrappers.AtariWrapper
