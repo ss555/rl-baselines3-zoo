@@ -1,1 +1,1 @@
-1.1.0a0
+python train.py --algo sac --env cartpoleSwing-v0 -n 90000 -optimize --n-trials 500 --n-jobs 3 --sampler tpe --pruner median
