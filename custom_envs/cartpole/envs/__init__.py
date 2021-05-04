@@ -1,3 +1,3 @@
 import os
-from cartpole.envs.cartpole_swingup_continous import CartPoleCusBottom
-from cartpole.envs.cartpole_swingup_discrete import CartPoleCusBottomDiscrete
+from cartpole.envs.cartpole_swingup_continous import CartPoleContinous
+from cartpole.envs.cartpole_swingup_discrete import CartPoleDiscrete

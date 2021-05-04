@@ -10,13 +10,10 @@ from collections import deque
 from scipy.integrate import odeint
 import iir_filter
 #PWM 180
-[A,B,C,D]=[-19.976538106642725, 1.0287320880446733, -0.9326363456754534, 0.035395644087165744]
+[A,B,C,D]=[-7.794018686563599, 0.37538450501353504, -0.4891760779740128, -0.002568958116514183]
 #pwm_offset=2
-wFiltered=4.606770906465107 #filtered [21.222338184653342, 0.08719759445687768]
-wAngular=4.8
-# def reward_fnCos(x, costheta, theta_dot=0,Kx=5):
-#     reward = 1+costheta-x**2#-1*(abs(theta_dot)>10)
-#     return reward
+wFiltered=0 #filtered [21.222338184653342, 0.08719759445687768]
+wAngular=4.85658326956131
 
 def reward_fnCos(x, costheta, sintheta, theta_dot=0, sparse=False, Kx=0.5):
     if sparse:
@@ -28,22 +25,18 @@ def reward_fnCos(x, costheta, sintheta, theta_dot=0, sparse=False, Kx=0.5):
     return reward
 
 
-length=0.4273973221641475#center of mass
+length=0.416#center of mass
 N_STEPS=800
 # #TEST#
 K1 = 18.8 #30#Guil  #dynamic friction
-K2 = 0.09240234723563177#0.15 #2 #0.1  #friction on theta
-Mpoletest = 0.2
-McartTest = 0.6
-Mcart=0.28
-# Mpole=0.03#0.05#s
-Mpole=0.03#6#0.05#s
-#Applied_force=5.6#REAL for 180pwm
-Applied_force=5.6#5.6 #6 or 2.2(a*m)
-#CartPoleDiscrete Physical equations
-class CartPoleCusBottom(gym.Env):
+K2 = 0.11963736650935591#0.15 #2 #0.1  #friction on theta
+# Mpoletest = 0.2
+# McartTest = 0.6
+Mcart=0.5
+Mpole=0.075
+class CartPoleContinous(gym.Env):
     def __init__(self,
-                 Te=0.05,
+                 Te=0.02,
                  discreteActions=False,
                  resetMode='random',
                  f_a=A,
@@ -51,9 +44,9 @@ class CartPoleCusBottom(gym.Env):
                  f_c=C,
                  f_d=D,
                  integrator="semi-euler",
-                 tensionMax=8.4706,
+                 tensionMax=12,#8.4706,
                  FILTER=False,
-                 n=2,
+                 n=1,
                  Kp=0,
                  sparseReward=False,
                  Km=0,#1.2,
@@ -65,10 +58,10 @@ class CartPoleCusBottom(gym.Env):
         self.Kp=Kp#bruit du process
         self.g = 9.806
         self.masscart = Mcart
-        self.masspole = Mpole
-        self.total_mass = (self.masspole + self.masscart)
+        self.masspoleIni = Mpole
+        self.total_mass = (self.masspoleIni + self.masscart)
         self.length = 0.4611167818372032  # center of mass
-        self.polemass_length = (self.masspole * self.length)
+        # self.polemass_length = (self.masspole * self.length)
         self.tau = Te  # seconds between state updates
         self.kinematics_integrator = integrator  # 'rk'#
         self.theta_threshold_radians = math.pi
@@ -93,7 +86,6 @@ class CartPoleCusBottom(gym.Env):
         self.viewer = None
         self.state = None
         self.steps_beyond_done = None
-        self.total_mass = (self.masspole + self.masscart)
         self.tauMec = 0.1  # 05
         self.wAngularIni = wAngular  # 4.488 #T=1.4285, w=
         self.reward = None
@@ -128,7 +120,9 @@ class CartPoleCusBottom(gym.Env):
                 raise Exception
         else:#continous
             pass
-        self.wAngularIniUsed = np.random.normal(self.wAngularIni, 0.02, 1)[0]
+        self.wAngularIniUsed = np.random.normal(self.wAngularIni, 0.1, 1)[0]
+        self.masspole=np.random.normal(self.masspoleIni, 0.01, 1)[0]
+        self.polemass_length = (self.masspole * self.length)
         if self.kinematics_integrator=='semi-euler':
             for i in range(self.n):
                 force = self._calculate_force(action)
@@ -159,7 +153,7 @@ class CartPoleCusBottom(gym.Env):
         self.state = np.array([x, x_dot, np.cos(theta), np.sin(theta), theta_dot], dtype=np.float32)
         done=False
         self.COUNTER+=1
-        if x < -self.x_threshold or x > self.x_threshold or self.COUNTER == self.MAX_STEPS_PER_EPISODE:
+        if x < -self.x_threshold or x > self.x_threshold or self.COUNTER == self.MAX_STEPS_PER_EPISODE or abs(theta_dot)>11:
             # print('out of bound')
             done = True
             x = np.clip(x, -self.x_threshold, self.x_threshold)
@@ -275,5 +269,6 @@ class CartPoleCusBottom(gym.Env):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
+
 
 
