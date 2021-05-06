@@ -15,7 +15,7 @@ import iir_filter
 wFiltered=0 #filtered [21.222338184653342, 0.08719759445687768]
 wAngular=4.85658326956131
 
-def reward_fnCos(x, costheta, sintheta, theta_dot=0, sparse=False, Kx=0.5):
+def reward_fnCos(x, costheta, sintheta, theta_dot=0, sparse=False, Kx=5):
     if sparse:
         reward = 0.0
         if abs(np.arctan2(sintheta,costheta))<np.pi*30/180 and abs(x)<0.2:
@@ -47,7 +47,7 @@ class CartPoleContinous(gym.Env):
                  tensionMax=12,#8.4706,
                  FILTER=False,
                  n=1,
-                 Kp=0,
+                 Kp=0.5,
                  sparseReward=False,
                  Km=0,#1.2,
                  seed=0):
